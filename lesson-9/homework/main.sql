@@ -1,183 +1,203 @@
 ------------------------------------------------------------
--- LESSON 9 - FULL DATABASE SETUP SCRIPT (SQL SERVER)
--- Includes all tables, insert statements, and corrections
+-- LESSON 9: JOINS (INNER JOINS)
+-- Compatible with SQL Server
+-- Includes EASY (1–10), MEDIUM (11–20), and HARD (21–30)
 ------------------------------------------------------------
 
--- Drop tables if they already exist (for a clean rerun)
-IF OBJECT_ID('Invoices') IS NOT NULL DROP TABLE Invoices;
-IF OBJECT_ID('Orders') IS NOT NULL DROP TABLE Orders;
-IF OBJECT_ID('Sales') IS NOT NULL DROP TABLE Sales;
-IF OBJECT_ID('Products_Discounted') IS NOT NULL DROP TABLE Products_Discounted;
-IF OBJECT_ID('Products') IS NOT NULL DROP TABLE Products;
-IF OBJECT_ID('City_Population') IS NOT NULL DROP TABLE City_Population;
-IF OBJECT_ID('Customers') IS NOT NULL DROP TABLE Customers;
 
-------------------------------------------------------------
--- 1. Products Table
-------------------------------------------------------------
-CREATE TABLE Products (
-    ProductID INT PRIMARY KEY,
-    ProductName NVARCHAR(100),
-    Category NVARCHAR(50),
-    Price DECIMAL(10,2),
-    StockQuantity INT
-);
+--------------------------
+--  EASY LEVEL TASKS
+--------------------------
 
-INSERT INTO Products (ProductID, ProductName, Category, Price, StockQuantity) VALUES
-(1, 'Laptop', 'Electronics', 1200, 50),
-(2, 'Phone', 'Electronics', 800, 100),
-(3, 'Headphones', 'Electronics', 150, 200),
-(4, 'Refrigerator', 'Appliances', 900, 30),
-(5, 'Microwave', 'Appliances', 300, 40),
-(6, 'Shoes', 'Fashion', 120, 150),
-(7, 'T-shirt', 'Fashion', 30, 300),
-(8, 'Watch', 'Fashion', 250, 80),
-(9, 'Blender', 'Appliances', 100, 60),
-(10, 'Tablet', 'Electronics', 600, 90);
+-- 1. List all combinations of product names and supplier names
+SELECT P.ProductName, S.SupplierName
+FROM Products P
+CROSS JOIN Suppliers S;
 
-------------------------------------------------------------
--- 2. Customers Table
-------------------------------------------------------------
-CREATE TABLE Customers (
-    CustomerID INT PRIMARY KEY,
-    CustomerName NVARCHAR(100),
-    City NVARCHAR(50),
-    Country NVARCHAR(50)
-);
+-- 2. Get all combinations of departments and employees
+SELECT D.DepartmentName, E.Name AS EmployeeName
+FROM Departments D
+CROSS JOIN Employees E;
 
-INSERT INTO Customers (CustomerID, CustomerName, City, Country) VALUES
-(1, 'John Smith', 'London', 'UK'),
-(2, 'Emily Johnson', 'Paris', 'France'),
-(3, 'Akmal Karimov', 'Tashkent', 'Uzbekistan'),
-(4, 'Aisha Ali', 'Lagos', 'Nigeria'),
-(5, 'Liam Brown', 'Los Angeles', 'USA'),
-(6, 'Sophia Davis', 'Lisbon', 'Portugal'),
-(7, 'Oliver Miller', 'Berlin', 'Germany'),
-(8, 'Isabella Wilson', 'Lima', 'Peru'),
-(9, 'Murat Ospanov', 'Almaty', 'Kazakhstan'),
-(10, 'Layla Khan', 'Lahore', 'Pakistan');
+-- 3. List only the combinations where the supplier actually supplies the product
+SELECT S.SupplierName, P.ProductName
+FROM Products P
+INNER JOIN Suppliers S ON P.SupplierID = S.SupplierID;
 
-------------------------------------------------------------
--- 3. Orders Table
-------------------------------------------------------------
-CREATE TABLE Orders (
-    OrderID INT PRIMARY KEY,
-    CustomerID INT,
-    ProductID INT,
-    OrderDate DATE,
-    Quantity INT,
-    TotalAmount DECIMAL(10,2),
-    FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID),
-    FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
-);
+-- 4. List customer names and their order IDs
+SELECT CONCAT(C.FirstName, ' ', C.LastName) AS CustomerName, O.OrderID
+FROM Orders O
+INNER JOIN Customers C ON O.CustomerID = C.CustomerID;
 
-INSERT INTO Orders (OrderID, CustomerID, ProductID, OrderDate, Quantity, TotalAmount) VALUES
-(1, 1, 2, '2023-01-10', 2, 1600),
-(2, 2, 1, '2023-01-12', 1, 1200),
-(3, 3, 3, '2023-02-05', 3, 450),
-(4, 4, 6, '2023-02-10', 2, 240),
-(5, 5, 10, '2023-03-01', 1, 600),
-(6, 6, 4, '2023-03-15', 1, 900),
-(7, 7, 5, '2023-03-20', 2, 600),
-(8, 8, 8, '2023-04-02', 1, 250),
-(9, 9, 9, '2023-04-05', 3, 300),
-(10, 10, 7, '2023-04-10', 5, 150);
+-- 5. List product names and categories
+SELECT P.ProductName, C.CategoryName
+FROM Products P
+INNER JOIN Categories C ON P.CategoryID = C.CategoryID;
 
-------------------------------------------------------------
--- 4. Sales Table
-------------------------------------------------------------
-CREATE TABLE Sales (
-    SaleID INT PRIMARY KEY,
-    ProductID INT,
-    CustomerID INT,
-    SaleDate DATE,
-    SaleAmount DECIMAL(10,2),
-    FOREIGN KEY (ProductID) REFERENCES Products(ProductID),
-    FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID)
-);
+-- 6. Get product names and orders where product IDs match
+SELECT P.ProductName, O.OrderID, O.Quantity
+FROM Orders O
+INNER JOIN Products P ON O.ProductID = P.ProductID;
 
-INSERT INTO Sales (SaleID, ProductID, CustomerID, SaleDate, SaleAmount) VALUES
-(1, 1, 1, '2023-01-10', 1200),
-(2, 2, 2, '2023-01-15', 800),
-(3, 3, 3, '2023-02-05', 450),
-(4, 4, 4, '2023-02-10', 900),
-(5, 5, 5, '2023-03-01', 300),
-(6, 6, 6, '2023-03-15', 120),
-(7, 7, 7, '2023-03-20', 30),
-(8, 8, 8, '2023-04-02', 250),
-(9, 9, 9, '2023-04-05', 100),
-(10, 10, 10, '2023-04-10', 600);
+-- 7. List employees and their department names
+SELECT E.Name AS EmployeeName, D.DepartmentName
+FROM Employees E
+INNER JOIN Departments D ON E.DepartmentID = D.DepartmentID;
 
-------------------------------------------------------------
--- 5. Invoices Table
-------------------------------------------------------------
-CREATE TABLE Invoices (
-    InvoiceID INT PRIMARY KEY,
-    CustomerID INT,
-    InvoiceDate DATE,
-    TotalAmount DECIMAL(10,2),
-    FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID)
-);
+-- 8. List customer names and their payment IDs
+SELECT CONCAT(C.FirstName, ' ', C.LastName) AS CustomerName, P.PaymentID
+FROM Payments P
+INNER JOIN Customers C ON P.CustomerID = C.CustomerID;
 
-INSERT INTO Invoices (InvoiceID, CustomerID, InvoiceDate, TotalAmount) VALUES
-(1, 1, '2023-01-10', 1600),
-(2, 2, '2023-01-12', 1200),
-(3, 3, '2023-02-05', 450),
-(4, 4, '2023-02-10', 240),
-(5, 5, '2023-03-01', 600),
-(6, 6, '2023-03-15', 900),
-(7, 7, '2023-03-20', 600),
-(8, 8, '2023-04-02', 250),
-(9, 9, '2023-04-05', 300),
-(10, 10, '2023-04-10', 150);
+-- 9. List all orders that have matching payments
+SELECT O.OrderID, P.PaymentID, P.Amount
+FROM Orders O
+INNER JOIN Payments P ON O.OrderID = P.OrderID;
 
-------------------------------------------------------------
--- 6. City_Population Table
-------------------------------------------------------------
-CREATE TABLE City_Population (
-    City NVARCHAR(50),
-    Year INT,
-    Population INT
-);
+-- 10. Show orders where product price is more than 100
+SELECT O.OrderID, P.ProductName, P.Price
+FROM Orders O
+INNER JOIN Products P ON O.ProductID = P.ProductID
+WHERE P.Price > 100;
 
-INSERT INTO City_Population (City, Year, Population) VALUES
-('Bektemir', 2012, 34000),
-('Chilonzor', 2012, 48000),
-('Yakkasaroy', 2012, 56000),
-('Bektemir', 2013, 36000),
-('Chilonzor', 2013, 49000),
-('Yakkasaroy', 2013, 58000);
 
-------------------------------------------------------------
--- 7. Products_Discounted Table
-------------------------------------------------------------
-CREATE TABLE Products_Discounted (
-    ProductID INT PRIMARY KEY,
-    ProductName NVARCHAR(100),
-    Category NVARCHAR(50),
-    Price DECIMAL(10,2)
-);
 
-INSERT INTO Products_Discounted (ProductID, ProductName, Category, Price) VALUES
-(101, 'Laptop', 'Electronics', 1000),
-(102, 'Phone', 'Electronics', 700),
-(103, 'Shoes', 'Fashion', 100),
-(104, 'Watch', 'Fashion', 200),
-(105, 'Blender', 'Appliances', 90);
+--------------------------
+--  MEDIUM LEVEL TASKS
+--------------------------
 
-------------------------------------------------------------
--- FINAL CORRECTION
-------------------------------------------------------------
-ALTER TABLE Products
-ADD DiscountPrice DECIMAL(10,2) NULL;
+-- 11. List all employees who made orders (assuming EmployeeID in Orders)
+SELECT DISTINCT E.EmployeeID, E.Name AS EmployeeName
+FROM Employees E
+INNER JOIN Orders O ON E.EmployeeID = O.EmployeeID;
 
-UPDATE Products
-SET DiscountPrice = 
-    CASE 
-        WHEN Price > 500 THEN Price * 0.9
-        ELSE Price * 0.95
-    END;
+-- 12. List all customers and the total number of their orders
+SELECT CONCAT(C.FirstName, ' ', C.LastName) AS CustomerName, COUNT(O.OrderID) AS TotalOrders
+FROM Customers C
+INNER JOIN Orders O ON C.CustomerID = O.CustomerID
+GROUP BY C.FirstName, C.LastName;
 
-------------------------------------------------------------
--- ✅ END OF FULL DATABASE SETUP SCRIPT
-------------------------------------------------------------
+-- 13. Show product name, supplier name, and category name together
+SELECT P.ProductName, S.SupplierName, C.CategoryName
+FROM Products P
+INNER JOIN Suppliers S ON P.SupplierID = S.SupplierID
+INNER JOIN Categories C ON P.CategoryID = C.CategoryID;
+
+-- 14. List all orders along with product and customer names
+SELECT O.OrderID, P.ProductName, CONCAT(C.FirstName, ' ', C.LastName) AS CustomerName
+FROM Orders O
+INNER JOIN Products P ON O.ProductID = P.ProductID
+INNER JOIN Customers C ON O.CustomerID = C.CustomerID;
+
+-- 15. Find the total amount of each payment by joining Orders and Payments
+SELECT P.PaymentID, SUM(P.Amount) AS TotalPaid
+FROM Payments P
+INNER JOIN Orders O ON P.OrderID = O.OrderID
+GROUP BY P.PaymentID;
+
+-- 16. Find which employees belong to which departments and how many employees per department
+SELECT D.DepartmentName, COUNT(E.EmployeeID) AS EmployeeCount
+FROM Departments D
+INNER JOIN Employees E ON D.DepartmentID = E.DepartmentID
+GROUP BY D.DepartmentName;
+
+-- 17. List all products that have been ordered at least once
+SELECT DISTINCT P.ProductName
+FROM Products P
+INNER JOIN Orders O ON P.ProductID = O.ProductID;
+
+-- 18. Find total quantity ordered for each product
+SELECT P.ProductName, SUM(O.Quantity) AS TotalOrdered
+FROM Products P
+INNER JOIN Orders O ON P.ProductID = O.ProductID
+GROUP BY P.ProductName;
+
+-- 19. List customers and total payment amount they made
+SELECT CONCAT(C.FirstName, ' ', C.LastName) AS CustomerName, SUM(P.Amount) AS TotalPaid
+FROM Customers C
+INNER JOIN Payments P ON C.CustomerID = P.CustomerID
+GROUP BY C.FirstName, C.LastName;
+
+-- 20. Show supplier names and total number of products supplied
+SELECT S.SupplierName, COUNT(P.ProductID) AS TotalProducts
+FROM Suppliers S
+INNER JOIN Products P ON S.SupplierID = P.SupplierID
+GROUP BY S.SupplierName;
+
+
+
+--------------------------
+-- HARD LEVEL TASKS
+--------------------------
+
+-- 21. Show customer names and total quantity of products they ordered
+SELECT CONCAT(C.FirstName, ' ', C.LastName) AS CustomerName, SUM(O.Quantity) AS TotalQuantity
+FROM Customers C
+INNER JOIN Orders O ON C.CustomerID = O.CustomerID
+GROUP BY C.FirstName, C.LastName;
+
+-- 22. List employee name, department name, and total orders handled
+SELECT E.Name AS EmployeeName, D.DepartmentName, COUNT(O.OrderID) AS OrdersHandled
+FROM Employees E
+INNER JOIN Departments D ON E.DepartmentID = D.DepartmentID
+INNER JOIN Orders O ON E.EmployeeID = O.EmployeeID
+GROUP BY E.Name, D.DepartmentName;
+
+-- 23. Show each supplier and total sales (sum of order quantities * product price)
+SELECT S.SupplierName, SUM(O.Quantity * P.Price) AS TotalSales
+FROM Suppliers S
+INNER JOIN Products P ON S.SupplierID = P.SupplierID
+INNER JOIN Orders O ON P.ProductID = O.ProductID
+GROUP BY S.SupplierName;
+
+-- 24. List top 3 customers who spent the most
+SELECT TOP 3 CONCAT(C.FirstName, ' ', C.LastName) AS CustomerName, SUM(P.Amount) AS TotalSpent
+FROM Customers C
+INNER JOIN Payments P ON C.CustomerID = P.CustomerID
+GROUP BY C.FirstName, C.LastName
+ORDER BY TotalSpent DESC;
+
+-- 25. List all products and how many times each was ordered
+SELECT P.ProductName, COUNT(O.OrderID) AS TimesOrdered
+FROM Products P
+INNER JOIN Orders O ON P.ProductID = O.ProductID
+GROUP BY P.ProductName
+ORDER BY TimesOrdered DESC;
+
+-- 26. Find employees who have made orders with total value > 5000
+SELECT E.Name AS EmployeeName, SUM(O.Quantity * P.Price) AS TotalSales
+FROM Employees E
+INNER JOIN Orders O ON E.EmployeeID = O.EmployeeID
+INNER JOIN Products P ON O.ProductID = P.ProductID
+GROUP BY E.Name
+HAVING SUM(O.Quantity * P.Price) > 5000;
+
+-- 27. List all categories with average product price
+SELECT C.CategoryName, AVG(P.Price) AS AvgPrice
+FROM Categories C
+INNER JOIN Products P ON C.CategoryID = P.CategoryID
+GROUP BY C.CategoryName;
+
+-- 28. Show which department’s employees generated the most sales
+SELECT D.DepartmentName, SUM(O.Quantity * P.Price) AS TotalSales
+FROM Departments D
+INNER JOIN Employees E ON D.DepartmentID = E.DepartmentID
+INNER JOIN Orders O ON E.EmployeeID = O.EmployeeID
+INNER JOIN Products P ON O.ProductID = P.ProductID
+GROUP BY D.DepartmentName
+ORDER BY TotalSales DESC;
+
+-- 29. Find each customer’s most expensive product ordered
+SELECT CONCAT(C.FirstName, ' ', C.LastName) AS CustomerName, MAX(P.Price) AS MaxProductPrice
+FROM Customers C
+INNER JOIN Orders O ON C.CustomerID = O.CustomerID
+INNER JOIN Products P ON O.ProductID = P.ProductID
+GROUP BY C.FirstName, C.LastName;
+
+-- 30. Show total revenue per category
+SELECT C.CategoryName, SUM(O.Quantity * P.Price) AS TotalRevenue
+FROM Categories C
+INNER JOIN Products P ON C.CategoryID = P.CategoryID
+INNER JOIN Orders O ON P.ProductID = O.ProductID
+GROUP BY C.CategoryName
+ORDER BY TotalRevenue DESC;
